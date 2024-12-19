@@ -1,12 +1,6 @@
-import Navigation from "./_components/Navigation";
-import Logo from "./_components/Logo";
 import "./_styles/globals.css";
-import {Josefin_Sans} from "next/font/google"
-
-const josefin = Josefin_Sans({
-  subsets: ["latin"],
-  display: "swap",
-})
+import { Josefin_Sans } from "next/font/google";
+import Header from "./_components/Header";
 
 export const metadata = {
   title: {
@@ -16,24 +10,25 @@ export const metadata = {
   description: "A place to find your inner peace",
 };
 
-export default function RootLayout({ children }) {
+const josefin = Josefin_Sans({
+  subsets: ["latin"],
+  display: "swap",
+});
+
+function RootLayout({ children }) {
   return (
     <html lang="en">
       <body
-        className={`bg-primary-950 text-primary-100 min-h-screen antialiased  ${josefin.className} flex flex-col`}
+        className={` ${josefin.className} bg-primary-950 text-primary-100 min-h-screen antialiased  flex flex-col relative`}
       >
-        <header className="border-b border-primary-900 px-8 py-5">
-          <div className="flex justify-between items-center max-w-7xl mx-auto">
-            <Logo />
-            <Navigation />
-          </div>
-        </header>
-        <div className="flex-1 px-8 py-12">
+        <Header />
 
-        <main className="max-w-7xl mx-auto">{children}</main>
+        <div className="flex-1 px-8 py-12 grid">
+          <main className="max-w-7xl w-full mx-auto">{children}</main>
         </div>
-       
       </body>
     </html>
   );
 }
+
+export default RootLayout;
