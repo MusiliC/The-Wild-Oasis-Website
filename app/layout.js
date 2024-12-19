@@ -3,18 +3,15 @@ import Navigation from "./_components/Navigation";
 import Logo from "./_components/Logo";
 import "./_styles/globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 export const metadata = {
-  title: "The Wild Oasis",
+  title: {
+    template: "%s - The Wild Oasis ",
+    default: "The Wild Oasis",
+  },
+  description: {
+    default: "A place to find your inner peace",
+  },
 };
 
 export default function RootLayout({ children }) {
