@@ -3,21 +3,42 @@ import { EyeSlashIcon, MapPinIcon, UsersIcon } from "@heroicons/react/24/solid";
 import Image from "next/image";
 
 
-export default async function Page({params}) {
 
-       const { cabinId } = await params;
+export async function generateMetadata({ params }) {
+  const { cabinId } = await params;
 
-       const cabin = await getCabin(cabinId);
+  const { name } = await getCabin(cabinId);
 
-  const { id, name, max_capacity, regular_price, discount, image, description } =
-    cabin;  
+  return {
+    title: `Cabin ${name}`,
+  };
+}
 
+export default async function Page({ params }) {
+  const { cabinId } = await params;
+
+  const cabin = await getCabin(cabinId);
+
+  const {
+    id,
+    name,
+    max_capacity,
+    regular_price,
+    discount,
+    image,
+    description,
+  } = cabin;
 
   return (
     <div className="max-w-6xl mx-auto mt-8">
       <div className="grid grid-cols-[3fr_4fr] gap-20 border border-primary-800 py-3 px-10 mb-24">
         <div className="relative scale-[1.15] -translate-x-3">
-          <Image src={image} fill className="object-cover" alt={`Cabin ${name}`} />
+          <Image
+            src={image}
+            fill
+            className="object-cover"
+            alt={`Cabin ${name}`}
+          />
         </div>
 
         <div>
