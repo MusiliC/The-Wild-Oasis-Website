@@ -2,10 +2,13 @@
 import { Suspense } from "react";
 import CabinList from "../_components/CabinList";
 import Spinner from "../_components/Spinner";
+import Filter from "../_components/Filter";
 
+
+// Revalidation takes place in static generated pages
 
 // ISR Technique to revalidate data
-// export const revalidate = 3600;
+//  export const revalidate = 3600;
 
 // To opt out of data cache revalidation
 // export const revalidate = 0;
@@ -15,7 +18,9 @@ export const metadata = {
 };
 
 
-function Page() {
+function Page({searchParams}) {
+
+  const filter = searchParams?.capacity ?? "all"
 
   return (
     <div>
@@ -30,11 +35,14 @@ function Page() {
         home away from home. The perfect spot for a peaceful, calm vacation.
         Welcome to paradise.
       </p>
-      <Suspense fallback={<Spinner/>}>
-        <CabinList />
+      <div className="flex justify-end mb-8">
+        <Filter />
+      </div>
+      <Suspense fallback={<Spinner />} key={filter} >
+        <CabinList filter={filter} />
       </Suspense>
     </div>
-  );
+  ); 
 }
 
 export default Page;
