@@ -4,11 +4,18 @@ import CabinList from "../_components/CabinList";
 import Spinner from "../_components/Spinner";
 
 
+// ISR Technique to revalidate data
+// export const revalidate = 3600;
+
+// To opt out of data cache revalidation
+// export const revalidate = 0;
+
 export const metadata = {
   title: "Cabins",
 };
+
+
 function Page() {
- 
 
   return (
     <div>
