@@ -13,12 +13,16 @@ const authConfig = {
       // todo -> converts value to a boolean
       return !!auth?.user   
     }
+  },
+  pages:{
+    signIn: '/login',
+ 
   }
 };
 
 
 
-export const {auth, handlers: {
+export const {auth,signIn, signOut, handlers: {
     GET, POST
 }} = NextAuth(authConfig);
 
