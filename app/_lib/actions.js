@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { auth, signIn, signOut } from "./auth";
 import { supabase } from "./supabase";
 import { getBookings } from "./data-service";
+import { redirect } from "next/navigation";
 
 export async function updateProfile(formData) {
   const session = await auth();
@@ -26,8 +27,7 @@ export async function updateProfile(formData) {
   const { data, error } = await supabase
     .from("guests")
     .update(updateData)
-    .eq("id", session?.user?.guestId)
-  
+    .eq("id", session?.user?.guestId);
 
   if (error) {
     console.error(error);
@@ -35,7 +35,6 @@ export async function updateProfile(formData) {
   }
 
   revalidatePath("/account/profile");
-
 }
 
 export async function signInAction() {
@@ -46,29 +45,64 @@ export async function signOutAction() {
   await signOut({ redirectTo: "/" });
 }
 
-export async function deleteReservation(bookingId){
-    const session = await auth();
-    if (!session) throw new Error("Not authenticated");
+export async function deleteReservation(bookingId) {
+  const session = await auth();
+  if (!session) throw new Error("Not authenticated");
 
-    const guestBooking = await getBookings(session.user.guestId);
+  const guestBooking = await getBookings(session.user.guestId);
 
-    const guestBookingIds = guestBooking.map((booking) => booking.id);
+  const guestBookingIds = guestBooking.map((booking) => booking.id);
 
+  if (!guestBookingIds.includes(bookingId))
+    throw new Error("Unauthorized to delete booking");
 
-    if (!guestBookingIds.includes(bookingId))
-      throw new Error("Unauthorized to delete booking");
+  const { error } = await supabase
+    .from("bookings")
+    .delete()
+    .eq("id", bookingId);
 
-   const { error } = await supabase
-     .from("bookings")
-     .delete()
-     .eq("id", bookingId);
+  if (error) {
+    console.error(error);
+    throw new Error("Booking could not be deleted");
+  }
 
+  revalidatePath("/account/reservations");
+}
 
-   if (error) {
-     console.error(error);
-     throw new Error("Booking could not be deleted");
-   }
+export async function updateBooking(formData) {
+  const session = await auth();
+  if (!session) throw new Error("Not authenticated");
 
+  const guestBooking = await getBookings(session.user.guestId);
 
-   revalidatePath("/account/reservations");
+  const guestBookingIds = guestBooking.map((booking) => booking.id);
+
+   const bookingId = Number(formData.get("bookingId"));
+
+  if (!guestBookingIds.includes(bookingId))
+    throw new Error("Unauthorized to update booking");
+
+  const updateData = {
+    num_guests: Number(formData.get("num_guests")),
+    observations: formData.get("observations").slice(0, 500),
+  };
+
+ 
+
+  const { error } = await supabase
+    .from("bookings")
+    .update(updateData)
+    .eq("id", bookingId)
+    .select()
+    .single();
+
+  if (error) {
+    console.error(error);
+    throw new Error("Booking could not be updated");
+  }
+
+  revalidatePath(`/account/reservations/${bookingId}`);
+  revalidatePath("/account/reservations");
+
+  redirect("/account/reservations");
 }
