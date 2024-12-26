@@ -1,12 +1,35 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
+import { differenceInDays } from "date-fns";
 import { useReservation } from "./ReservationContext";
+import { createBooking } from "../_lib/actions";
+import SubmitButton from "./SubmitButton";
+// import { createBooking } from "../_lib/actions";
 
 function ReservationForm({ cabin, user }) {
-  const { range } = useReservation();
+  const { range, resetRange } = useReservation();
 
   // CHANGE
-  const { max_capacity } = cabin;
+  const { id, max_capacity, regular_price, discount } = cabin;
+
+  const start_date = range.from;
+  const end_date = range.to;
+
+  const num_nights = differenceInDays(end_date, start_date);
+
+  const cabin_price = num_nights * (regular_price - discount);
+
+  const bookingData = {
+    start_date,
+    end_date,
+    num_nights,
+    cabin_price,
+    cabin_id: id,
+    guest_id: user?.id,
+  };
+
+  const createBookingWithData = createBooking.bind(null, bookingData);
 
   return (
     <div className="scale-[1.01]">
@@ -25,12 +48,19 @@ function ReservationForm({ cabin, user }) {
         </div>
       </div>
 
-      <form className="bg-primary-900 py-10 px-16 text-lg flex gap-5 flex-col">
+      <form
+        // action = {createBookingWithData}
+        action={async (formData) => {
+          await createBookingWithData(formData);
+          resetRange();
+        }}
+        className="bg-primary-900 py-10 px-16 text-lg flex gap-5 flex-col"
+      >
         <div className="space-y-2">
-          <label htmlFor="numGuests">How many guests?</label>
+          <label htmlFor="num_guests">How many guests?</label>
           <select
-            name="numGuests"
-            id="numGuests"
+            name="num_guests"
+            id="num_guests"
             className="px-5 py-3 bg-primary-200 text-primary-800 w-full shadow-sm rounded-sm"
             required
           >
@@ -58,11 +88,15 @@ function ReservationForm({ cabin, user }) {
         </div>
 
         <div className="flex justify-end items-center gap-6">
-          <p className="text-primary-300 text-base">Start by selecting dates</p>
+          {/* Adding loading state with a new Button element */}
 
-          <button className="bg-accent-500 px-8 py-4 text-primary-800 font-semibold hover:bg-accent-600 transition-all disabled:cursor-not-allowed disabled:bg-gray-500 disabled:text-gray-300">
-            Reserve now
-          </button>
+          {!(start_date && end_date) ? (
+            <p className="text-primary-300 text-base">
+              Start by selecting dates
+            </p>
+          ) : (
+            <SubmitButton pendingLabel="Reserving...">Reserve now</SubmitButton>
+          )}
         </div>
       </form>
     </div>

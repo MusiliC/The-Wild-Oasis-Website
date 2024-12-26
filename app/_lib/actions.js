@@ -77,7 +77,7 @@ export async function updateBooking(formData) {
 
   const guestBookingIds = guestBooking.map((booking) => booking.id);
 
-   const bookingId = Number(formData.get("bookingId"));
+  const bookingId = Number(formData.get("bookingId"));
 
   if (!guestBookingIds.includes(bookingId))
     throw new Error("Unauthorized to update booking");
@@ -86,8 +86,6 @@ export async function updateBooking(formData) {
     num_guests: Number(formData.get("num_guests")),
     observations: formData.get("observations").slice(0, 500),
   };
-
- 
 
   const { error } = await supabase
     .from("bookings")
@@ -105,4 +103,38 @@ export async function updateBooking(formData) {
   revalidatePath("/account/reservations");
 
   redirect("/account/reservations");
+}
+
+// todo -> when using bind data in form actions -> the formData comes as the second argument
+export async function createBooking(bookingData, formData) {
+  const session = await auth();
+  if (!session) throw new Error("Not authenticated");
+
+  // todo -> if theres a lot of data in form data -> we can use Object.entries(formData) to get the data
+
+  const newBooking = {
+    ...bookingData,
+    guest_id: session.user.guestId,
+    num_guests: Number(formData.get("num_guests")),
+    observations: formData.get("observations").slice(0, 500),
+    extras_price: 0,
+    total_price: bookingData.cabin_price,
+    status: "unconfirmed",
+    has_breakfast: false,
+    is_paid: false,
+  };
+
+  const { error } = await supabase
+    .from("bookings")
+    .insert([{ ...newBooking }])
+    .select();
+
+  if (error) {
+    console.error(error);
+    throw new Error("Bookings could not be created");
+  }
+
+  revalidatePath(`/cabins/${bookingData.cabin_id}`);
+
+  redirect("/cabins/thankyou");
 }
